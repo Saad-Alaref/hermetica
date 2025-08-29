@@ -1,0 +1,25 @@
+# Build outputs
+bin/
+
+# IDE/editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+
+# Work artifacts (runtime)
+work/
+
+# Databases
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# Go
+coverage.out
+

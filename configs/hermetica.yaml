@@ -1,0 +1,96 @@
+project: "Hermetica"
+workdir: "./work"
+database: "./work/hermetica.sqlite"
+
+targets:
+  - domain: "example.com"
+    include_subdomains: true
+    ipv6_enabled: false
+
+scope:
+  include_cidrs: []
+  exclude_cidrs: []
+  allowed_domain_regex: ".*"
+  denied_domain_regex: ""
+
+tools:
+  platform: "linux"
+  paths:
+    subfinder: "/usr/local/bin/subfinder"
+    dnsx:      "/usr/local/bin/dnsx"
+    naabu:     "/usr/local/bin/naabu"
+    httpx:     "/usr/local/bin/httpx"
+    katana:    "/usr/local/bin/katana"
+    gowitness: "/usr/local/bin/gowitness"
+  versions:
+    subfinder: ">=2.8.0"
+    dnsx:      ">=1.2.2"
+    naabu:     ">=2.3.5"
+    httpx:     ">=1.7.1"
+    katana:    ">=1.2.1"
+    gowitness: ">=3.0.5"
+  provider_config: "~/.config/subfinder/provider-config.yaml"
+  resolvers_file: "./configs/resolvers.txt"
+
+dns:
+  wildcard_filter: true
+  verify_count: 2
+  ipv6_enabled: false
+
+limits:
+  concurrency: 200
+  httpx_timeout_seconds: 8
+  retries: 1
+  request_jitter_ms: 250
+  max_body_kb: 128
+
+scan:
+  profile: "stealth"                 # stealth | thorough
+  naabu_rate: 4000
+  adaptive_backoff:
+    enabled: true
+    packet_loss_threshold: 0.10
+    backoff_multiplier: 0.5
+    recovery_multiplier: 1.25
+
+stages:
+  brute_dns:
+    enabled: false
+    wordlist: "./configs/words.txt"
+    max_candidates: 200000
+  tls_san_feedback:
+    enabled: true
+    max_rounds: 1
+  screenshots:
+    enabled: false
+    rate_limit_per_min: 60
+  crawling:
+    enabled: false
+    katana:
+      concurrency: 10
+      timeout_seconds: 8
+      max_depth: 2
+  vhost_brute:
+    enabled: false
+    host_wordlist: "./configs/vhost-words.txt"
+    max_hosts_per_ip: 100
+
+probe_matrix:
+  include_direct_ip: true
+  sni_host_combinations:
+    - { sni: "subdomain", host: "subdomain" }
+    - { sni: "subdomain", host: "" }
+    - { sni: "",          host: "subdomain" }
+    - { sni: "",          host: "" }
+
+evidence:
+  store_body_hash: true
+  store_body_sample: false
+  store_screenshots: false
+  body_hash_algo: "xxhash"
+  near_dupe: true
+
+report:
+  csv: true
+  html: false
+
